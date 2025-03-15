@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <title>🔥 Nối Từ 2 Người 🔥</title>
+<style>
+    body {
+      font-family: 'Times New Roman', Times, serif;
+      background: linear-gradient(210deg, #f904e0 30%,#fafaf9 50%, #6664d8 70%);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    .container {
+      background-color: #fff;
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+      text-align: center;
+      width: 400px;
+    }
+
+    h1 {
+        text-align: center;
+        margin-bottom: 30px;
+        animation: blinkColor 1s infinite;
+        font-weight: bold;
+        }
+        @keyframes blinkColor {
+                0% { 
+                    opacity: 1; 
+                    color: #7d2828;
+                }
+                25% { 
+                    opacity: 0.6; 
+                    color: #cb3277;
+                }
+                50% { 
+                    opacity: 1; 
+                    color: #163916;
+                }
+                75% { 
+                    opacity: 0.6; 
+                    color: #2121ac;
+                }
+                100% { 
+                    opacity: 1; 
+                    color: #aa5e5e;
+                }
+            }
+
+    .info {
+      margin-bottom: 10px;
+      font-size: 18px;
+    }
+
+    .info span {
+      font-weight: bold;
+      color: #e91e63;
+    }
+
+    input {
+      width: 80%;
+      padding: 12px;
+      margin-bottom: 10px;
+      font-size: 16px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      text-align: center;
+    }
+
+    button {
+      background-color: #4caf50;
+      color: white;
+      padding: 12px 20px;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    button:hover {
+      background-color: #45a049;
+    }
+
+    #message {
+      margin-top: 15px;
+      font-size: 16px;
+      min-height: 24px;
+    }
+
+    .success { color: #4caf50; }
+    .error { color: #f44336; }
+
+    .timer {
+      font-size: 24px;
+      margin-top: 10px;
+      color: #ff5722;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1>Nối Từ 2 Người</h1>
+
+    <div class="info">Lượt: <span id="player-turn">Người chơi 1</span></div>
+    <div class="info">Từ hiện tại: <span id="current-word">bắt đầu</span></div>
+    <div class="info">Phải bắt đầu bằng: <span id="next-word">đầu</span></div>
+
+    <div class="info">Điểm Người chơi 1: <span id="score1">0</span></div>
+    <div class="info">Điểm Người chơi 2: <span id="score2">0</span></div>
+
+    <div class="timer">⏰ <span id="timer">30</span> giây</div>
+
+    <input type="text" id="word-input" placeholder="Nhập từ tiếp theo..." onkeydown="if(event.key==='Enter') submitWord()">
+    <button onclick="submitWord()">Nối Từ</button>
+
+    <div id="message"></div>
+  </div>
+
+  <script>
+    const tuTiengViet = [
+      "bắt đầu", "đầu tiên", "tiên phong", "phong cảnh", "cảnh đẹp",,"chiếc xe","cái ghế","đôi dép","bút chì","quả táo","lá cây","đèn pin","cái kéo","con vịt","mưa rào","nắng sớm"
+      ,"đẹp trai", "trai làng", "làng quê", "quê hương", "hương thơm","quả cam","ngôi nhà","cái bàn","quyển sách","bông hoa"
+
+    ];
+
+    let currentWord = "bắt đầu";
+    let currentPlayer = 1;
+    let score1 = 0;
+    let score2 = 0;
+    let usedWords = [currentWord];
+    let timer;
+    let timeLeft = 30;
+
+    function getLastWord(str) {
+      const words = str.trim().split(" ");
+      return words[words.length - 1]; // từ cuối cùng
+    }
+
+    function getFirstWord(str) {
+      const words = str.trim().split(" ");
+      return words[0]; // từ đầu tiên
+    }
+
+    //  Kiểm tra lặp từ (nhau nhau, o o, ...)
+    function isDuplicatedWord(word) {
+      const words = word.trim().split(" ");
+      if (words.length === 2 && words[0] === words[1]) {
+        return true; // Lặp từ giống nhau
+      }
+      return false;
+    }
+
+    function submitWord() {
+      const input = document.getElementById('word-input');
+      const newWord = input.value.trim().toLowerCase();
+
+      if (newWord === "") {
+        showMessage("⚠️ Bạn chưa nhập từ!", "error");
+        return;
+      }
+
+      //  Kiểm tra nhập đúng 2 từ
+      const wordParts = newWord.split(" ");
+        if (wordParts.length !== 2) {
+        showMessage("❌ Bạn chỉ được nhập đúng 2 từ!", "error");
+        return;
+      }
+
+
+      //  Kiểm tra từ lặp giống nhau
+      if (isDuplicatedWord(newWord)) {
+        showMessage("❌ Không được nhập từ lặp giống nhau!", "error");
+        return;
+      }
+
+      // Kiểm tra đã dùng chưa
+      if (usedWords.includes(newWord)) {
+        endGame(`❌ Từ "${newWord}" đã được dùng rồi! Người chơi ${currentPlayer} thua!`);
+        return;
+      }
+
+      const lastWord = getLastWord(currentWord);
+      const firstWord = getFirstWord(newWord);
+
+      if (firstWord !== lastWord) {
+        endGame(`❌ Sai! Từ mới phải bắt đầu bằng "${lastWord}". Người chơi ${currentPlayer} thua!`);
+        return;
+      }
+
+      //  Hợp lệ
+      currentWord = newWord;
+      usedWords.push(newWord);
+
+      if (currentPlayer === 1) {
+        score1++;
+        document.getElementById('score1').innerText = score1;
+        currentPlayer = 2;
+      } else {
+        score2++;
+        document.getElementById('score2').innerText = score2;
+        currentPlayer = 1;
+      }
+
+      document.getElementById('current-word').innerText = currentWord;
+      document.getElementById('next-word').innerText = getLastWord(currentWord);
+      document.getElementById('player-turn').innerText = `Người chơi ${currentPlayer}`;
+
+      input.value = "";
+      showMessage("✅ Chính xác!", "success");
+
+      startTimer();
+    }
+
+    function endGame(message) {
+      showMessage(message, "error");
+      clearInterval(timer);
+
+      alert(message);
+
+      // Reset game với từ mới từ danh sách
+      currentWord = getRandomWord();
+      usedWords = [currentWord];
+      score1 = 0;
+      score2 = 0;
+      currentPlayer = 1;
+
+      document.getElementById('current-word').innerText = currentWord;
+      document.getElementById('next-word').innerText = getLastWord(currentWord);
+      document.getElementById('score1').innerText = score1;
+      document.getElementById('score2').innerText = score2;
+      document.getElementById('player-turn').innerText = `Người chơi ${currentPlayer}`;
+
+      startTimer();
+    }
+
+    function getRandomWord() {
+      const index = Math.floor(Math.random() * tuTiengViet.length);
+      return tuTiengViet[index];
+    }
+
+    function showMessage(msg, type) {
+      const messageDiv = document.getElementById('message');
+      messageDiv.innerText = msg;
+
+      if (type === "success") {
+        messageDiv.classList.remove('error');
+        messageDiv.classList.add('success');
+      } else {
+        messageDiv.classList.remove('success');
+        messageDiv.classList.add('error');
+      }
+
+      setTimeout(() => {
+        messageDiv.innerText = "";
+      }, 3000);
+    }
+
+    function startTimer() {
+      clearInterval(timer);
+      timeLeft = 30;
+      document.getElementById('timer').innerText = timeLeft;
+
+      timer = setInterval(() => {
+        timeLeft--;
+        document.getElementById('timer').innerText = timeLeft;
+
+        if (timeLeft === 0) {
+          clearInterval(timer);
+          endGame(`⏰ Hết giờ! Người chơi ${currentPlayer} thua!`);
+        }
+      }, 1000);
+    }
+
+    window.onload = () => {
+      currentWord = getRandomWord();
+      usedWords = [currentWord];
+      document.getElementById('current-word').innerText = currentWord;
+      document.getElementById('next-word').innerText = getLastWord(currentWord);
+      startTimer();
+    };
+  </script>
+</body>
+</html>
